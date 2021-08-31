@@ -9,6 +9,7 @@ const {c, cpp, python, java} = require('compile-run');
 app.use(bodyParser.json());
 
 app.use(cors())
+var request = require('request');
 
 app.get('/', function(req, res)
 {
@@ -28,7 +29,6 @@ app.post("/run", function (req, res) {
     const code = req.body.code;
     const input = req.body.input;
     let resultPromise;
-
     switch(lang) {
         case "cpp":
             resultPromise = cpp.runSource(code,{
@@ -65,10 +65,10 @@ app.post("/run", function (req, res) {
     .catch(err => {
         console.log(err);
     });
-    // compiler.compile(2, code, "", (data) => {
-    //     console.log(data);
-    //     res.send(data);
-    // })
+    compiler.compile(2, code, "", (data) => {
+        console.log(data);
+        res.send(data);
+    })
     
 });
 
