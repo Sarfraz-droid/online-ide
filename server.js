@@ -5,10 +5,15 @@ var cors = require('cors')
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
-const {c, cpp, node, python, java} = require('compile-run');
+const {c, cpp, python, java} = require('compile-run');
 app.use(bodyParser.json());
 
 app.use(cors())
+
+app.get('/', function(req, res)
+{
+    res.send("Hello World!");
+})
 
 
 app.post("/run", function (req, res) {
@@ -19,16 +24,43 @@ app.post("/run", function (req, res) {
     // })
     console.log(req.body);
     // console.log(data);
-
+    const lang = req.body.lang;
     const code = req.body.code;
     const input = req.body.input;
-    let resultPromise = cpp.runSource(code,{
-        stdin: input,
-    });
+    let resultPromise;
+
+    switch(lang) {
+        case "cpp":
+            resultPromise = cpp.runSource(code,{
+                stdin: input,
+            });
+            break;
+
+        case "c":
+            resultPromise = c.runSource(code,{
+                stdin: input,
+            });
+            break;
+        
+        case "java":
+
+            resultPromise = java.runSource(code,{
+                stdin: input,
+            });
+            break;
+
+        case "python": 
+            resultPromise = python.runSource(code,{
+                stdin: input,
+            });
+            break;
+    }
+
+
     resultPromise
     .then(result => {
         console.log(result);
-        res.send(result);
+        res.json(result);
     })
     .catch(err => {
         console.log(err);
@@ -40,7 +72,8 @@ app.post("/run", function (req, res) {
     
 });
 
+const Port = process.env.PORT || 5000
 
-app.listen(5000, function (req, res) {
-  console.log("listening on port 5000");
+app.listen(Port, function (req, res) {
+  console.log("listening on port " + Port);
 });
