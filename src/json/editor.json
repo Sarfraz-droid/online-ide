@@ -1,0 +1,22 @@
+{
+    "cpp" : {
+        "name" : "C++",
+        "code" : "//Write C++ Code here"
+    },
+    "java" : {
+        "name" : "Java",
+        "code" : "//Write Java Code here"
+    },
+    "python": {
+        "name" : "Python",
+        "code" : "//Write Python Code here"
+    },
+    "csharp": {
+        "name" : "C#",
+        "code" : "//Write C# Code here"
+    },
+    "c":{
+        "name" : "C",
+        "code" : "//Write C Code here"
+    }
+}
