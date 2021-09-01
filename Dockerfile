@@ -1,4 +1,4 @@
-FROM node:9-slim
+FROM rex1911/compile-code-base:latest
 RUN npm install
 COPY . /app
 WORKDIR /app
