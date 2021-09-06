@@ -1,22 +1,52 @@
-import { useState } from "react";
+import { useState,useEffect} from "react";
 
 import Editor from "@monaco-editor/react";
-import Select from "@material-ui/core/Select";
+
+import uuid from 'react-uuid'
+import firebase from "./firebase";
+import { useParams ,useHistory } from "react-router-dom";
 
 import editorjson from "./json/editor.json";
 
 import "./scss/home.scss";
+import styles from "./scss/Link.module.scss"
 
 import axios from "axios";
 
 function App() {
+
+  const db = firebase.firestore();
+  let id = new URLSearchParams(window.location.search).get("link");
+
+
+  useEffect(() => {
+    console.log(id);
+    if(id !== null) 
+    {
+      db.collection("code").doc(id).get().then(doc => {
+        if(doc.exists) {
+          if(doc.data().code !== undefined) {
+            setCode(doc.data().code);
+            setLanguage(doc.data().language);
+          }
+
+        }
+      })
+    }
+  }, [])
+
   const [Language, setLanguage] = useState("cpp");
   const [Code, setCode] = useState(editorjson);
-
+  const history = useHistory();
   const langs = ["cpp", "python", "c"];
 
   const [Input, setInput] = useState("");
   const [Output, setOutput] = useState("");
+
+  const [SaveSnackbar, setSaveSnackbar] = useState({
+    success: true,
+    opacity: 0,
+  });
 
   const HandleCode = (e) => {
     setCode((value) => {
@@ -43,6 +73,7 @@ function App() {
     };
 
 
+
     axios
       .post("https://idedockerdemo.herokuapp.com/run", data)
       .then((res) => {
@@ -61,6 +92,52 @@ function App() {
         console.log(err);
       });
   };
+
+  const handleSave = () => {
+    let uid = uuid();
+    db.collection("code").doc(uid).set({
+      code: Code,
+      language: Language,
+    }).then(() => {
+      setSaveSnackbar({
+        success: true,
+        opacity: 1,
+      });
+    }).catch(()=> {
+      setSaveSnackbar({
+        success: false,
+        opacity: 1,
+      });
+    });
+
+    setTimeout(() => {
+      setSaveSnackbar((value) => {
+        return({
+          ...value,
+          opacity: 0,
+        })
+      });
+    }, 3000);
+    console.log("/?link=" + uid);
+    history.push("/?link=" + uid );
+  };
+
+  
+
+  const Snackbar = (succeeded) => {
+    const success = {
+      backgroundColor: succeeded ? "#43a047" : "#e53935",
+      opacity: SaveSnackbar.opacity
+    };
+  
+
+    return(
+      <div className = "snackbar" style = {success}>
+          {succeeded ? "Saved" : "Error"}
+      </div>
+    );
+  };
+
 
   return (
     <div className="App">
@@ -95,6 +172,7 @@ function App() {
             />
           </div>
           <div className="Run">
+            <button className={styles["save"]} onClick={handleSave}>Save</button>
             <button onClick={handleRun}>Run</button>
           </div>
         </div>
@@ -115,6 +193,7 @@ function App() {
         </div>
       </div>
       {/* </header> */}
+      {Snackbar(SaveSnackbar.success)}
     </div>
   );
 }
